@@ -1,7 +1,7 @@
 # Sleepy 
 *Currently in development*
 
-**Please do not attempt to use this at this point in development.**
+**Useable in this stage of development**
 
 Ever had a hard time sleeping? Me too. Playing music or sounds of rain in the background usually helps
 me go to sleep. 
@@ -13,6 +13,8 @@ it completely mutes the music.
 ![Sleepy cartoon](sleepy_cartoon.png)
 
 Currently, this only works for music played in Chrome. This is great if you have some pre-made
-sleeping playlist!
+sleeping playlist on Youtube!
+
+
 
 It's pretty simple. Well, that's all for now. Thank you for reading!

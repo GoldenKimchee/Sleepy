@@ -1,96 +1,66 @@
 from pycaw.pycaw import AudioUtilities, ISimpleAudioVolume
-from reset import reset_volume
+from reset import ask_reset
 import time
 
 def main():
-    volume, play_time = music_settings()
-    play_music(volume, play_time)
+    play_time = ask_play_time()
+    increments = ask_increments()
+    play_music(play_time, increments)
+    ask_reset()
 
-def ask_reset():
-    valid_responses = ["y", "n"]
-    while True:
-        response = input("(Recommended) Would you like to reset the volume? (y/n)")
-        if response not in valid_responses:
-            print("Please answer 'y' or 'n'.")
-        reset_volume()
-        print("Volume was reset.")
-        break
+def play_music(play_time, increments):
+    hours = int(play_time[0]) * 60 * 60
+    minutes = int(play_time[1]) * 60
+    total_time = hours + minutes
+    sleep_time = total_time / increments
+    volume_value = 1
+    decrease = volume_value / increments
 
-def play_music(volume_value, play_time):
     while volume_value > 0:
         sessions = AudioUtilities.GetAllSessions() # Get all sessions currently playing audio
         for session in sessions:
             if session.Process and session.Process.name() == 'chrome.exe':
                 volume = session._ctl.QueryInterface(ISimpleAudioVolume)
-                print(volume.GetMasterVolume())
                 volume.SetMasterVolume(volume_value, None)
-        hours = int(play_time[0]) * 60 * 60
-        minutes = int(play_time[1]) * 60
-        total_time = hours + minutes
-        section = volume_value * 10
-        time.sleep(total_time / section)
-        volume_value = volume_value - 0.1
+        time.sleep(sleep_time)
+        volume_value = round(volume_value - decrease, 3)
 
+def ask_increments():
+    ask_again = True
 
-def check_time(time):
-    for i in time[0]:  # Check hours
+    while ask_again:
         try:
-            int(i)
+            increments = int(input("In how many increments should the volume decrease? (Enter a whole number) "))
+            ask_again = False
         except TypeError:
-            print("The hours must be in whole numbers.")
-            return False
+            print("Please enter a whole number.")
         except Exception:
-            print("Something bad happened.")
-            return False
+            print("Something went wrong...")
 
-    for i in time[1]:  # Check minutes
-        try:
-            int(i)
-        except TypeError:
-            print("The minutes must be in whole numbers.")
-            return False
-        except Exception:
-            print("Something bad happened.")
-            return False
-
-    return [int(time[0]), int(time[1])]
-
-
-def ask_volume():
-    print("Volume can be set to a decimal / whole number from 0 - 1 (e.g. 0.5)")
-    volume = float(input("Set volume to... "))
-    return volume, True
+    return increments
 
 
 def ask_play_time():
     print("Time can be set with a colon in-between, hours to minutes (e.g. 2:30)")
-    play_time = input("Play for... ")
-    return play_time, True
+    ask_again = True
 
-def music_settings():
-    volume = -1
-    ask_again_volume = False
+    while ask_again:
+        try:
+            play_time = input("Play for... ")
+            play_time = play_time.split(":", 1)
+        except ValueError:
+            print("Please enter a time with ':'.")
 
-    play_time = ""
-    ask_again_play_time = False
+        try:
+            int(play_time[0])
+            int(play_time[1])
+            ask_again = False
+        except ValueError:
+            print("Please enter valid numbers with ':'.")
+        except Exception:
+            print("Something bad happened...")
 
-    while not (volume >= 0 and volume <= 1):
-        if ask_again_volume:
-            print("Please enter a valid volume amount.")
-
-        volume, ask_again_volume = ask_volume()
-
-    while not (":" in play_time):
-        if ask_again_play_time:
-            print("Please enter a valid time limit.")
-
-        play_time, ask_again_play_time = ask_play_time()
-
-    play_time = play_time.split(":", 1)
-    valid_time = check_time(play_time)
-
-    if valid_time:
-        return volume, play_time
+    return play_time
 
 if __name__ == "__main__":
     main()
